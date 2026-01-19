@@ -1,0 +1,36 @@
+---
+- name: Créer les dossiers de volume GitLab
+  file:
+    path: "/srv/gitlab/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - config
+    - logs
+    - data
+
+- name: Lancer le conteneur GitLab CE
+  community.docker.docker_container:
+    name: gitlab
+    image: gitlab/gitlab-ce:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "2222:22" # On décale le SSH de GitLab pour ne pas bloquer le SSH système
+    volumes:
+      - /srv/gitlab/config:/etc/gitlab
+      - /srv/gitlab/logs:/var/log/gitlab
+      - /srv/gitlab/data:/var/opt/gitlab
+    env:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.grp-ay.lab'
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_set_headers'] = {
+          "X-Forwarded-Proto" => "https",
+          "X-Forwarded-Ssl" => "on"
+        }
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+  # Le démarrage initial prend 3 à 5 minutes !

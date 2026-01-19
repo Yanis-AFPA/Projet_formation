@@ -1,0 +1,2 @@
+dns_ip: "10.212.213.21"
+reverse_proxy_ip: "10.212.213.10" # IP de votre proxy Nginx

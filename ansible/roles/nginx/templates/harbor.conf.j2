@@ -1,0 +1,26 @@
+upstream harbor-backend {
+    server 10.212.213.40:80;
+}
+
+server {
+    listen 443 ssl;
+    server_name harbor.grp-ay.lab;
+
+    ssl_certificate     /etc/nginx/certs/fullchain.crt;
+    ssl_certificate_key /etc/nginx/certs/server.key;
+
+    # Optimisation pour l'upload de grosses images Docker
+    client_max_body_size 0;
+
+    location / {
+        proxy_pass http://harbor-backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        
+        # Nécessaire pour les websockets de Harbor
+        proxy_buffering off;
+        proxy_request_buffering off;
+    }
+}

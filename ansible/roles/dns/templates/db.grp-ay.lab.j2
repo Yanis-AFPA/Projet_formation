@@ -1,0 +1,23 @@
+$TTL 86400
+@   IN  SOA ns1.grp-ay.lab. admin.grp-ay.lab. (
+        {{ ansible_date_time.epoch }} ; Serial
+        3600      ; Refresh
+        1800      ; Retry
+        604800    ; Expire
+        86400 )   ; Negative Cache TTL
+
+; Serveur de noms
+@       IN  NS  ns1.grp-ay.lab.
+
+; Enregistrements A
+ns1         IN  A   {{ dns_ip }}
+@           IN  A   {{ reverse_proxy_ip }}
+
+; --- AJOUT RECOMMANDÉ ---
+; Permet de cibler la VM GitLab directement (hors proxy) pour le SSH
+srv-gitlab-ay  IN  A   10.212.213.30
+srv-harbor     IN  A   10.212.213.40
+; ------------------------
+
+; Wildcard : Tout le reste (gitlab, www, api...) va vers le Proxy Nginx
+* IN  A   {{ reverse_proxy_ip }}

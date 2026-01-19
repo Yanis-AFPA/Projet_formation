@@ -1,0 +1,38 @@
+# 1. VÉRIFICATION : On regarde si Harbor est déjà là
+- name: Vérifier si Harbor est déjà installé
+  stat:
+    path: /opt/harbor
+  register: harbor_check
+
+# 2. TÉLÉCHARGEMENT : On conditionne avec 'when'
+- name: Télécharger l'installateur Harbor (Offline)
+  get_url:
+    url: https://github.com/goharbor/harbor/releases/download/v2.14.2/harbor-offline-installer-v2.14.2.tgz
+    dest: /tmp/harbor-offline-installer.tgz
+    mode: '0644'
+  # Ne télécharge que si le dossier n'existe pas
+  when: not harbor_check.stat.exists
+
+# 3. EXTRACTION
+- name: Extraire l'archive
+  unarchive:
+    src: /tmp/harbor-offline-installer.tgz
+    dest: /opt/
+    remote_src: yes
+    creates: /opt/harbor  
+
+# 4. CONFIGURATION
+- name: Configurer Harbor (harbor.yml)
+  template:
+    src: harbor.yml.j2
+    dest: /opt/harbor/harbor.yml
+
+# 5. INSTALLATION ET CRÉATION DU FICHIER TÉMOIN
+- name: Installer et Lancer Harbor
+  shell: |
+    ./install.sh
+    touch /opt/harbor/harbor_installed  # On crée le fichier témoin pour Ansible
+  args:
+    chdir: /opt/harbor
+    # Ansible ne lancera install.sh que si ce fichier n'existe pas
+    creates: /opt/harbor/harbor_installed

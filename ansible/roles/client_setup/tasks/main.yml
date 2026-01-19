@@ -1,0 +1,19 @@
+---
+
+- name: 2. Copier le certificat CA dans le dossier de confiance
+  copy:
+    src: /tmp/fetched_certs/rootCA.crt
+    dest: /usr/local/share/ca-certificates/grp-ay-ca.crt
+    mode: '0644'
+
+- name: 3. Mettre à jour les certificats
+  command: update-ca-certificates
+
+- name: Configurer le DNS client (resolv.conf)
+  ansible.builtin.copy:
+    dest: /etc/resolv.conf
+    mode: "0644"
+    content: |
+      search grp-ay.lab
+      nameserver {{ dns_ip }}
+  when: inventory_hostname != 'dns1' # Ne pas casser le DNS lui-même (sauf s'il se résout lui-même via 127.0.0.1)

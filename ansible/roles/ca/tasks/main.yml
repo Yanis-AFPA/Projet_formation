@@ -1,0 +1,73 @@
+---
+- name: Créer le dossier pour les certificats
+  file:
+    path: /opt/pki
+    state: directory
+    mode: '0755'
+
+# --- 1. Création de l'Autorité Racine (La CA) ---
+
+- name: Générer la clé privée de la CA (Root Key)
+  community.crypto.openssl_privatekey:
+    path: /opt/pki/rootCA.key
+
+- name: Générer la demande de signature pour la CA (Root CSR)
+  community.crypto.openssl_csr:
+    path: /opt/pki/rootCA.csr
+    privatekey_path: /opt/pki/rootCA.key
+    common_name: "GRP-AY Root CA"
+    basic_constraints: "CA:TRUE"
+    basic_constraints_critical: yes
+    key_usage:
+      - keyCertSign
+      - cRLSign
+    key_usage_critical: yes
+
+- name: Générer le certificat de la CA (Root Cert)
+  community.crypto.x509_certificate:
+    path: /opt/pki/rootCA.crt
+    csr_path: /opt/pki/rootCA.csr
+    privatekey_path: /opt/pki/rootCA.key
+    provider: selfsigned
+    selfsigned_not_after: "+3650d"
+    mode: '0644'
+
+# --- 2. Création du Certificat Serveur (pour grp-ay.lab) ---
+
+- name: Générer la clé privée du serveur
+  community.crypto.openssl_privatekey:
+    path: /opt/pki/server.key
+
+- name: Générer la demande de signature (CSR)
+  community.crypto.openssl_csr:
+    path: /opt/pki/server.csr
+    privatekey_path: /opt/pki/server.key
+    common_name: "grp-ay.lab"
+    # J'ai remis ta variable IP dynamique, c'est très bien !
+    subject_alt_name: "DNS:grp-ay.lab,DNS:*.grp-ay.lab,IP:{{ ansible_default_ipv4.address | default('10.212.213.20') }}"
+
+- name: Générer le certificat serveur signé par la CA
+  community.crypto.x509_certificate:
+    path: /opt/pki/server.crt
+    csr_path: /opt/pki/server.csr
+    provider: ownca
+    ownca_path: /opt/pki/rootCA.crt
+    ownca_privatekey_path: /opt/pki/rootCA.key
+    ownca_not_after: "+365d"
+
+# --- NOUVEAU : Création de la Full Chain ---
+# On concatène Server + CA dans un seul fichier
+- name: Créer le fichier Full Chain (Concaténation)
+  shell: cat /opt/pki/server.crt /opt/pki/rootCA.crt > /opt/pki/fullchain.crt
+  # On ne le fait que si server.crt a changé ou si fullchain n'existe pas
+  when: ansible_check_mode is not defined or not ansible_check_mode
+
+# --- 3. Faire confiance à la CA sur la machine elle-même ---
+- name: Copier la CA dans le magasin de confiance de la VM
+  copy:
+    src: /opt/pki/rootCA.crt
+    dest: /usr/local/share/ca-certificates/grp-ay-ca.crt
+    remote_src: yes
+
+- name: Mettre à jour les certificats de confiance
+  command: update-ca-certificates

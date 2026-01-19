@@ -1,0 +1,25 @@
+---
+- name: Mettre à jour le cache APT
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Installer Docker et les dépendances
+  apt:
+    name:
+      - docker.io
+      - python3-docker        # Nécessaire pour le module docker_container
+      - python3-cryptography  # Nécessaire pour le module crypto (CA)
+    state: present
+
+- name: Démarrer et activer le service Docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ajouter l'utilisateur admin au groupe docker
+  user:
+    name: admin
+    groups: docker
+    append: yes

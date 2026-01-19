@@ -1,0 +1,21 @@
+# Redirection HTTP vers HTTPS
+server {
+    listen 80;
+    server_name grp-ay.lab;
+    return 301 https://$host$request_uri;
+}
+
+# Configuration HTTPS
+server {
+    listen 443 ssl;
+    server_name grp-ay.lab *.grp-ay.lab;
+
+    # Chemins DANS le conteneur Docker
+    ssl_certificate     /etc/nginx/certs/fullchain.crt; 
+    ssl_certificate_key /etc/nginx/certs/server.key;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html;
+    }
+}

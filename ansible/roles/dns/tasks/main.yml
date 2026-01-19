@@ -1,0 +1,43 @@
+---
+- name: Installer Bind9 et outils DNS
+  ansible.builtin.apt:
+    name:
+      - bind9
+      - bind9utils
+      - dnsutils
+    state: present
+    update_cache: true
+    cache_valid_time: 0
+
+- name: Créer le dossier des zones
+  ansible.builtin.file:
+    path: /etc/bind/zones
+    state: directory
+    mode: "0755"
+
+- name: Déployer named.conf.options
+  ansible.builtin.template:
+    src: named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    mode: "0644"
+  notify: Restart bind9
+
+- name: Déployer named.conf.local (zone grp-ay.lab)
+  ansible.builtin.template:
+    src: named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    mode: "0644"
+  notify: Restart bind9
+
+- name: Déployer la zone grp-ay.lab
+  ansible.builtin.template:
+    src: db.grp-ay.lab.j2
+    dest: "/etc/bind/zones/db.grp-ay.lab"
+    mode: "0644"
+  notify: Restart bind9
+
+- name: Activer et démarrer bind9
+  ansible.builtin.systemd:
+    name: bind9
+    state: started
+    enabled: true

@@ -1,0 +1,22 @@
+options {
+    directory "/var/cache/bind";
+
+    # Écouter sur toutes les interfaces IPv4 et IPv6
+    listen-on { any; };
+    listen-on-v6 { any; };
+
+    # Autoriser la récursion (nécessaire pour résoudre google.com par exemple)
+    recursion true;
+    
+    # Autoriser tout le monde à interroger ce serveur (dans un lab sécurisé)
+    allow-query { any; };
+
+    # Forwarders : Si Bind ne connaît pas la réponse (ex: google.com), il demande à ceux-là
+    forwarders {
+        1.1.1.1;
+        8.8.8.8;
+    };
+
+    dnssec-validation auto;
+    auth-nxdomain no;    # conform to RFC1035
+};

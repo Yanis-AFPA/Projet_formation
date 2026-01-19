@@ -1,0 +1,55 @@
+hostname: harbor.grp-ay.lab
+
+# HTTP Interne (Le HTTPS est géré par le Proxy Nginx en amont)
+http:
+  port: 80
+
+# HTTPS désactivé dans Harbor lui-même
+# https:
+#   port: 443
+#   certificate: /your/certificate/path
+#   private_key: /your/private/key/path
+
+external_url: https://harbor.grp-ay.lab
+
+harbor_admin_password: "AdminPassword123"
+
+database:
+  password: "DbPassword123"
+  max_idle_conns: 50
+  max_open_conns: 100
+
+data_volume: /data
+
+log:
+  level: info
+  local:
+    rotate_count: 50
+    rotate_size: 200M
+    location: /var/log/harbor
+
+# Configuration critique pour v2.10+ / v2.14+
+jobservice:
+  max_job_workers: 10
+  logger_sweeper_duration: 1
+  job_loggers:
+    - type: "file"
+      level: "INFO"
+    - type: "std"
+      level: "INFO"
+
+notification:
+  webhook_job_max_retry: 10
+  webhook_job_http_client_timeout: 10
+
+trivy:
+  ignore_unfixed: false
+  skip_update: false
+  offline_scan: false
+  security_check: false
+
+# Métriques (Optionnel mais souvent demandé par les nouvelles versions)
+metric:
+  enabled: false
+  port: 9090
+  path: /metrics

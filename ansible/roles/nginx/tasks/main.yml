@@ -1,0 +1,50 @@
+- name: Créer le dossier de configuration sur le serveur
+  file:
+    path: /opt/nginx/conf.d
+    state: directory
+    mode: '0755'
+    recurse: yes
+
+- name: Copier la configuration Nginx (VirtualHost)
+  template:
+    src: nginx.conf.j2
+    dest: /opt/nginx/conf.d/grp-ay.conf
+  notify: Restart Nginx  
+
+- name: Copier la config Nginx GitLab
+  template:
+    src: gitlab.conf.j2
+    dest: /opt/nginx/conf.d/gitlab.conf
+  notify: Restart Nginx
+
+- name: Copier la config Nginx Harbor
+  template:
+    src: harbor.conf.j2
+    dest: /opt/nginx/conf.d/harbor.conf
+  notify: Restart Nginx
+
+- name: Créer le dossier web et copier l'index
+  file:
+    path: /opt/nginx/html
+    state: directory
+    mode: '0755'
+
+- name: Copier la page d'accueil
+  template:
+    src: index.html.j2
+    dest: /opt/nginx/html/index.html
+ 
+
+- name: Lancer le conteneur Nginx avec SSL
+  community.docker.docker_container:
+    name: nginx-proxy
+    image: nginx:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /opt/pki:/etc/nginx/certs:ro
+      - /opt/nginx/html:/usr/share/nginx/html:ro

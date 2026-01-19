@@ -1,0 +1,65 @@
+---
+# ==========================================
+# ÉTAPE 1 : LA BASE DE SÉCURITÉ (CA & PROXY)
+# ==========================================
+- name: Déploiement Infra Sécurisée (Proxy)
+  hosts: proxy
+  become: true
+  roles:
+    - docker
+    - ca     # Génère les certificats
+    - nginx
+  tasks:
+    - name: Récupérer le certificat CA vers la VM Admin
+      fetch: 
+        src: /opt/pki/rootCA.crt 
+        dest: /tmp/fetched_certs/ 
+        flat: true
+
+# ==========================================
+# ÉTAPE 2 : CONFIGURATION DES CLIENTS (TOUS)
+# ==========================================
+# C'est ici qu'on configure TOUT LE MONDE (Proxy, DNS, GitLab, Admin)
+# pour qu'ils utilisent le DNS interne et fassent confiance à la CA.
+- name: Configuration Généralisée des Clients
+  hosts: all
+  become: true
+  vars:
+    dns_ip: "10.212.213.21"
+  roles:
+    - client_setup
+
+# ==========================================
+# ÉTAPE 3 : LE SERVEUR DNS
+# ==========================================
+- name: Déploiement du Serveur DNS
+  hosts: dns
+  become: true
+  vars:
+    dns_ip: "10.212.213.21"
+    reverse_proxy_ip: "10.212.213.20"
+    gitlab_ip: "10.212.213.30"
+  roles:
+    - dns
+
+# ==========================================
+# ÉTAPE 4 : L'USINE LOGICIELLE (GITLAB)
+# ==========================================
+- name: Déploiement GitLab
+  hosts: gitlab
+  become: true
+  roles:
+    - docker
+    - gitlab
+    - gitlab_runner 
+
+# ==========================================
+# ÉTAPE 5 : Le Registre Harbor
+# ==========================================
+- name: Déploiement Harbor
+  hosts: harbor
+  become: true
+  roles:
+    - docker
+    - harbor
+
