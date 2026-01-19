@@ -74,4 +74,4 @@ ansible-playbook -i inventory/hosts.ini playbook.yml
 *   **Isolation** : Les services ne sont pas exposés directement, tout passe par le Reverse Proxy.
 
 ---
-*Projet réalisé dans le cadre de la formation CDA.*
+*Projet réalisé dans le cadre de la formation.*
