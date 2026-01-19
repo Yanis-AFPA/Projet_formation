@@ -26,7 +26,7 @@ L'objectif est de mettre en œuvre une infrastructure complète et sécurisée p
 | :--- | :--- | :--- | :--- |
 | **Proxy** | `10.212.213.20` | Reverse Proxy / CA | Point d'entrée unique (Nginx), Terminaison SSL, Autorité de Certification. |
 | **DNS** | `10.212.213.21` | DNS (Bind9) | Résolution de noms interne pour le domaine `.lab`. |
-| **GitLab** | `10.212.213.30` | SCM / CI/CD | Forge logicielle et pipelines d'intégration continue. |
+| **GitLab** | `10.212.213.30` | CI/CD | Forge logicielle et pipelines d'intégration continue. |
 | **Harbor** | `10.212.213.40` | Registre Docker | Stockage sécurisé des images conteneurs. |
 
 ## 🛠 Déploiement (Infrastructure as Code)
