@@ -12,7 +12,7 @@ Le Runner GitLab utilise le moteur Docker de la machine hôte (via le socket `/v
 1.  **Projet :** Un projet nommé `demo` a été créé.
 2.  **Compte Robot :** Un compte robot a été généré pour l'authentification CI/CD.
 
-> **📸 SCREENSHOT ICI :** Capture d'écran Harbor montrant le projet "demo" et l'onglet "Robot Accounts".
+![alt text](images/Harbor_Robot.png)
 
 ---
 
@@ -26,44 +26,10 @@ Dans **Settings > CI/CD > Variables**, nous avons défini :
 | `HARBOR_USER` | `robot$gitlab-ci` | Nom du compte robot. |
 | `HARBOR_PASS` | `e2d...` (Secret) | Mot de passe masqué. |
 
-> **📸 SCREENSHOT ICI :** Capture de la page des variables GitLab CI/CD.
-
----
+![alt text](images/Harbor_Variables.png)
 
 ## 4. Le Pipeline (`.gitlab-ci.yml`)
-
-Ce fichier contourne le problème du format d'URL (l'erreur `invalid reference format`) en redéfinissant le domaine sans `https://` localement.
-
-**Points clés :**
-* **Pas de `dind` :** On utilise le socket Docker monté par le Runner.
-* **Nettoyage URL :** La variable `HARBOR_URL` sert au Login, mais pour le `build -t`, nous utilisons une variable locale `HARBOR_DOMAIN` propre.
-
-```yaml
-stages:
-  - build-and-push
-
-docker-build:
-  image: docker:latest
-  stage: build-and-push
-  
-  variables:
-    DOCKER_API_VERSION: "1.41"
-    # 👇 Correction critique : On définit le domaine PUR (sans https://)
-    # car "docker build -t" ne supporte pas le protocole dans le nom.
-    HARBOR_DOMAIN: "harbor.grp-ay.lab"
-  
-  before_script:
-    # Authentification auprès du registre
-    - echo "$HARBOR_PASS" | docker login $HARBOR_DOMAIN -u "$HARBOR_USER" --password-stdin
-  
-  script:
-    # Construction de l'image avec le nom de domaine propre
-    - docker build -t $HARBOR_DOMAIN/demo/test-image:simple .
-    
-    # Envoi vers Harbor
-    - docker push $HARBOR_DOMAIN/demo/test-image:simple
-```
-
+![alt text](images/Pipelines.png)
 ---
 
 ## 5. Exécution et Validation
@@ -75,13 +41,12 @@ Dans les logs, on vérifie :
 2.  Le téléchargement des layers.
 3.  Le message final de réussite.
 
-> **📸 SCREENSHOT ICI :** Capture d'écran du Job GitLab avec la coche verte et le log "Login Succeeded".
+![alt text](images/Gitlab_Logs.png)
 
 ### Côté Harbor
 Dans le projet `demo`, le dépôt `test-image` doit apparaître avec le tag `simple`.
 
-> **📸 SCREENSHOT ICI :** Capture d'écran de l'interface Harbor montrant l'image reçue.
-
+>![alt text](images/image_Docker_Harbor.png)
 ---
 
 ## 6. Problème résolu (Troubleshooting)
