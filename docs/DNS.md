@@ -41,7 +41,7 @@ Une entrée "Wildcard" est configurée pour diriger tout sous-domaine non spéci
 
 Cela signifie que n'importe quel service exposé via Nginx sera automatiquement résolu vers le proxy sans avoir besoin de modifier le DNS à chaque fois.
 *   Exemple : `gitlab.grp-ay.lab` -> `10.212.213.20`
-*   Exemple : `registry.grp-ay.lab` -> `10.212.213.20`
+*   Exemple : `harbor.grp-ay.lab` -> `10.212.213.20`
 
 ## 💻 Configuration Client (`client_setup`)
 
