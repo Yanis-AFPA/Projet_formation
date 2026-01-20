@@ -7,7 +7,7 @@
   become: true
   roles:
     - docker
-    - ca     # Génère les certificats
+    - ca
     - nginx
   tasks:
     - name: Récupérer le certificat CA vers la VM Admin
@@ -27,7 +27,9 @@
   vars:
     dns_ip: "10.212.213.21"
   roles:
+    - docker
     - client_setup
+    - node-exporter
 
 # ==========================================
 # ÉTAPE 3 : LE SERVEUR DNS
@@ -49,7 +51,6 @@
   hosts: gitlab
   become: true
   roles:
-    - docker
     - gitlab
     - gitlab_runner 
 
@@ -60,6 +61,23 @@
   hosts: harbor
   become: true
   roles:
-    - docker
     - harbor
+
+# ==========================================
+# ÉTAPE 6 : Le Wiki Bookstack
+# ==========================================
+- name: Déploiement Bookstack
+  hosts: bookstack
+  become: true
+  roles:
+    - bookstack
+
+# ==========================================
+# ÉTAPE 7 : Le Monitoring
+# ==========================================
+- name: Installation Monitoring Stack
+  hosts: monitoring
+  become: true
+  roles:
+    - monitoring
 

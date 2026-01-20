@@ -1,0 +1,87 @@
+# --- DEFINITION DES UPSTREAMS (Les cibles locales) ---
+upstream grafana_backend {
+    server 10.212.213.50:3000;
+}
+
+upstream prometheus_backend {
+    server 10.212.213.50:9090;
+}
+
+upstream alertmanager_backend {
+    server 10.212.213.50:9093;
+}
+
+# ============================================================
+# 1. GRAFANA (grafana.grp-ay.lab)
+# ============================================================
+server {
+    listen 80;
+    server_name grafana.grp-ay.lab;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name grafana.grp-ay.lab;
+
+    ssl_certificate     /etc/nginx/certs/fullchain.crt;
+    ssl_certificate_key /etc/nginx/certs/server.key;
+
+    location / {
+        proxy_pass http://grafana_backend;
+        
+        # Headers nécessaires pour Grafana
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        
+        # Support des WebSockets (Pour les graphes en direct)
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# ============================================================
+# 2. PROMETHEUS (prometheus.grp-ay.lab)
+# ============================================================
+server {
+    listen 80;
+    server_name prometheus.grp-ay.lab;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name prometheus.grp-ay.lab;
+
+    ssl_certificate     /etc/nginx/certs/fullchain.crt;
+    ssl_certificate_key /etc/nginx/certs/server.key;
+
+    location / {
+        proxy_pass http://prometheus_backend;
+        proxy_set_header Host $host;
+    }
+}
+
+# ============================================================
+# 3. ALERTMANAGER (alertmanager.grp-ay.lab)
+# ============================================================
+server {
+    listen 80;
+    server_name alertmanager.grp-ay.lab;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name alertmanager.grp-ay.lab;
+
+    ssl_certificate     /etc/nginx/certs/fullchain.crt;
+    ssl_certificate_key /etc/nginx/certs/server.key;
+
+    location / {
+        proxy_pass http://alertmanager_backend;
+        proxy_set_header Host $host;
+    }
+}

@@ -23,6 +23,18 @@
     dest: /opt/nginx/conf.d/harbor.conf
   notify: Restart Nginx
 
+- name: Copier config Nginx pour Wiki
+  template: 
+    src: wiki.conf.j2 
+    dest: /opt/nginx/conf.d/wiki.conf
+  notify: Restart Nginx
+
+- name: Copier la config Nginx pour le Monitoring
+  template:
+    src: monitoring.conf.j2
+    dest: /opt/nginx/conf.d/monitoring.conf
+  notify: Restart Nginx
+
 - name: Créer le dossier web et copier l'index
   file:
     path: /opt/nginx/html

@@ -1,0 +1,46 @@
+---
+- name: Créer un réseau Docker pour BookStack
+  community.docker.docker_network:
+    name: bookstack_net
+
+# --- Conteneur 1 : La Base de Données ---
+- name: Lancer MariaDB
+  community.docker.docker_container:
+    name: bookstack_db
+    image: linuxserver/mariadb
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: bookstack_net
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      MYSQL_ROOT_PASSWORD: "{{ bookstack_db_root_password }}"
+      MYSQL_DATABASE: "{{ bookstack_db_name }}"
+      MYSQL_USER: "{{ bookstack_db_user }}"
+      MYSQL_PASSWORD: "{{ bookstack_db_password }}"
+    volumes:
+      - /opt/bookstack/db_data:/config
+
+# --- Conteneur 2 : L'Application ---
+- name: Lancer BookStack
+  community.docker.docker_container:
+    name: bookstack_app
+    image: linuxserver/bookstack
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: bookstack_net
+    ports:
+      - "8080:80"
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      APP_URL: "https://wiki.grp-ay.lab"
+      APP_KEY: "{{ bookstack_app_key }}"
+      DB_HOST: "bookstack_db"
+      DB_DATABASE: "{{ bookstack_db_name }}"
+      DB_USERNAME: "{{ bookstack_db_user }}"
+      DB_PASSWORD: "{{ bookstack_db_password }}" 
+    volumes:
+      - /opt/bookstack/app_data:/config

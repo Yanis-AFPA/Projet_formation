@@ -69,8 +69,8 @@ variable "vms" {
 
 Le déploiement a été réalisé via la commande `terraform apply`. Le plan d'exécution a validé la création des ressources sans erreur.
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 Côté hyperviseur, les machines sont bien apparues et ont démarré automatiquement :
 
-![alt text](<Capture d’écran du 2026-01-14 12-57-20.png>)
+![alt text](<images/Capture d’écran du 2026-01-14 12-57-20.png>)

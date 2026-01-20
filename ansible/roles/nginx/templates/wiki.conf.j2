@@ -1,26 +1,19 @@
-upstream harbor-backend {
-    server 10.212.213.40:80;
+upstream wiki-backend {
+    server 10.212.213.41:8080; 
 }
 
 server {
     listen 443 ssl;
-    server_name harbor.grp-ay.lab;
+    server_name wiki.grp-ay.lab;
 
     ssl_certificate     /etc/nginx/certs/fullchain.crt;
     ssl_certificate_key /etc/nginx/certs/server.key;
 
-  
-    client_max_body_size 0;
-
     location / {
-        proxy_pass http://harbor-backend;
+        proxy_pass http://wiki-backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto https;
-        
-        # Nécessaire pour les websockets de Harbor
-        proxy_buffering off;
-        proxy_request_buffering off;
     }
 }

@@ -1,0 +1,14 @@
+---
+# --- Identifiants Base de Données (MariaDB) ---
+bookstack_db_root_password: "Passw0rd34"
+bookstack_db_name: "bookstackapp"
+bookstack_db_user: "bookstack"
+bookstack_db_password: "Passw0rd34"
+
+# --- Paramètres Application ---
+
+bookstack_app_key: "base64:Knji4UnXxs8dKfZfNIKx0myx34wYdwbYIvp6omP9upk="
+
+# Note : Le login par défaut de BookStack à l'installation est toujours :
+# Email : admin@admin.com
+# Pass  : password

@@ -43,7 +43,6 @@
     path: /opt/pki/server.csr
     privatekey_path: /opt/pki/server.key
     common_name: "grp-ay.lab"
-    # J'ai remis ta variable IP dynamique, c'est très bien !
     subject_alt_name: "DNS:grp-ay.lab,DNS:*.grp-ay.lab,IP:{{ ansible_default_ipv4.address | default('10.212.213.20') }}"
 
 - name: Générer le certificat serveur signé par la CA

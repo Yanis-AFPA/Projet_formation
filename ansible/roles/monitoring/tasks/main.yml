@@ -1,0 +1,75 @@
+---
+- name: Créer les dossiers de configuration
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/monitoring/prometheus
+    - /opt/monitoring/alertmanager
+    - /opt/monitoring/grafana
+
+- name: Copier la config Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: /opt/monitoring/prometheus/prometheus.yml
+
+- name: Copier les règles d'alertes Prometheus
+  copy:
+    src: alert_rules.yml
+    dest: /opt/monitoring/prometheus/alert_rules.yml
+
+- name: Copier la config Alertmanager
+  template:
+    src: alertmanager.yml.j2
+    dest: /opt/monitoring/alertmanager/config.yml
+
+- name: Créer le réseau Monitoring
+  community.docker.docker_network:
+    name: monitoring_net
+
+# --- 1. ALERTMANAGER ---
+- name: Lancer Alertmanager
+  community.docker.docker_container:
+    name: alertmanager
+    image: prom/alertmanager:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: monitoring_net
+    ports:
+      - "9093:9093"
+    volumes:
+      - /opt/monitoring/alertmanager/config.yml:/etc/alertmanager/config.yml
+
+# --- 2. PROMETHEUS ---
+- name: Lancer Prometheus
+  community.docker.docker_container:
+    name: prometheus
+    image: prom/prometheus:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: monitoring_net
+    ports:
+      - "9090:9090"
+    volumes:
+      - /opt/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /opt/monitoring/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prometheus_data:/prometheus
+
+# --- 3. GRAFANA ---
+- name: Lancer Grafana
+  community.docker.docker_container:
+    name: grafana
+    image: grafana/grafana:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: monitoring_net
+    ports:
+      - "3000:3000"
+    env:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    volumes:
+      - grafana_data:/var/lib/grafana
