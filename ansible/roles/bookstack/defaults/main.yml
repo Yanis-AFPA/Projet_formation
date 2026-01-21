@@ -1,14 +1,13 @@
----
-# --- Identifiants Base de Données (MariaDB) ---
+# --- Tes variables existantes ---
 bookstack_db_root_password: "Passw0rd34"
 bookstack_db_name: "bookstackapp"
 bookstack_db_user: "bookstack"
 bookstack_db_password: "Passw0rd34"
-
-# --- Paramètres Application ---
-
 bookstack_app_key: "base64:Knji4UnXxs8dKfZfNIKx0myx34wYdwbYIvp6omP9upk="
 
-# Note : Le login par défaut de BookStack à l'installation est toujours :
-# Email : admin@admin.com
-# Pass  : password
+# --- NOUVEAU : Import Markdown ---
+bookstack_url: "http://localhost:8080"  # ou IP de ta VM Proxmox
+bookstack_api_token_id: "CunAfjEkFfpCe9JK0oqhBUScDSrqI4oz"              # À créer dans l'UI BookStack
+bookstack_api_token_secret: "Obhdmxfplnb2OmeNHAhjoKkUMrpg10oT"
+bookstack_target_book_id: 1             # Crée un "book" vide avant
+bookstack_md_source_dir: "./md_files"   # Dossier de tes .md sur ta machine Ansible

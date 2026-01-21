@@ -1,25 +1,52 @@
 ---
-- name: Mettre à jour le cache APT
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: Installer Docker et les dépendances
+- name: Installation des pré-requis
   apt:
     name:
-      - docker.io
-      - python3-docker        # Nécessaire pour le module docker_container
-      - python3-cryptography  # Nécessaire pour le module crypto (CA)
+      - ca-certificates
+      - curl
+      - gnupg
     state: present
+    update_cache: yes
 
-- name: Démarrer et activer le service Docker
-  service:
-    name: docker
-    state: started
-    enabled: yes
+- name: Création du dossier pour la clé GPG
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Ajout de la clé GPG officielle de Docker
+  get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+    force: true
+
+- name: Ajout du dépôt Docker aux sources APT
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
+    state: present
+    filename: docker
+
+- name: Installation de Docker et du Plugin Compose
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+
 
 - name: Ajouter l'utilisateur admin au groupe docker
   user:
     name: admin
     groups: docker
     append: yes
+
+- name: S'assurer que le service Docker est démarré
+  service:
+    name: docker
+    state: started
+    enabled: yes

@@ -41,6 +41,39 @@
       DB_HOST: "bookstack_db"
       DB_DATABASE: "{{ bookstack_db_name }}"
       DB_USERNAME: "{{ bookstack_db_user }}"
-      DB_PASSWORD: "{{ bookstack_db_password }}" 
+      DB_PASSWORD: "{{ bookstack_db_password }}"
     volumes:
       - /opt/bookstack/app_data:/config
+
+# --- IMPORT MARKDOWN (nouveau) ---
+- name: Attendre que BookStack soit accessible
+  uri:
+    url: "{{ bookstack_url }}/login"
+    method: GET
+    status_code: 200
+  register: _bookstack_health
+  retries: 30
+  delay: 5
+  until: _bookstack_health.status == 200
+
+- name: Importer les fichiers Markdown dans BookStack
+  uri:
+    url: "{{ bookstack_url }}/api/pages"
+    method: POST
+    headers:
+      Authorization: "Token {{ CunAfjEkFfpCe9JK0oqhBUScDSrqI4oz }}:{{ Obhdmxfplnb2OmeNHAhjoKkUMrpg10oT }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: >-
+      {{
+        {
+          'book_id': bookstack_target_book_id,
+          'name': (item | basename | regex_replace('\\.md$', '')),
+          'markdown': lookup('file', item)
+        }
+      }}
+    status_code: [200, 201]
+    return_content: yes
+  loop: "{{ lookup('fileglob', bookstack_md_source_dir ~ '/*.md', wantlist=True) }}"
+  loop_control:
+    label: "{{ item | basename }}"
