@@ -33,3 +33,4 @@
           "X-Forwarded-Ssl" => "on"
         }
         gitlab_rails['gitlab_shell_ssh_port'] = 2222
+  # Le démarrage initial prend 3 à 5 minutes !

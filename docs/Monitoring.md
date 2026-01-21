@@ -52,7 +52,7 @@ monitoring
 
 ```yaml
 scrape_configs:
-  - job_name: 'node'  # <--- INDISPENSABLE pour les dashboards Grafana
+  - job_name: 'node' 
     static_configs:
       - targets:
         {% for host in groups['all'] %}
@@ -87,27 +87,20 @@ upstream alertmanager_backend {
 * **Prometheus :** `https://prometheus.grp-ay.lab`
 * **Alertmanager :** `https://alertmanager.grp-ay.lab`
 
-
 ---
 
-## 5. Configuration Post-Installation (Grafana)
+## 5. Automatisation (Provisioning Grafana)
 
-À faire manuellement après le déploiement Ansible :
+Grâce à Ansible, **aucune configuration manuelle n'est requise** après le déploiement.
 
-1.  **Connexion :** User `admin` / Password `admin`.
-2.  **Ajout Data Sources :**
-    * Aller dans **Connections > Data Sources**.
-    * **Prometheus :** URL = `http://prometheus:9090` (Nom interne Docker sur la .50).
-    * **Alertmanager :** URL = `http://alertmanager:9093`.
-3.  **Import Dashboard :**
-    * Aller dans **Dashboards > Import**.
-    * ID : **1860** (Node Exporter Full).
-    * Choisir la source Prometheus.
+### Mécanisme
+Grafana est pré-configuré via le montage de fichiers dans `/etc/grafana/provisioning`.
+
+1.  **Data Sources (Automatique)** :
+    * **Prometheus** est connecté via l'URL interne `http://prometheus:9090`.
+    * **Alertmanager** est connecté via l'URL interne `http://alertmanager:9093`.
+2.  **Dashboards (Automatique)** :
+    * Le dashboard **Node Exporter Full (1860)** est injecté au démarrage.
+    * Il utilise automatiquement la source Prometheus et le job `node`.
 
 ---
-
-## 6. Dépannage (Troubleshooting)
-
-| Erreur | Cause Probable | Solution |
-| :--- | :--- | :--- |
-| **Grafana "No Data"** | Le Dashboard cherche le job "node" mais Prometheus a un autre nom. | Modifier `prometheus.yml.j2`, mettre `job_name: 'node'`, relancer Ansible. |

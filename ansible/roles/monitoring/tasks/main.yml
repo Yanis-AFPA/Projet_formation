@@ -8,6 +8,9 @@
     - /opt/monitoring/prometheus
     - /opt/monitoring/alertmanager
     - /opt/monitoring/grafana
+    - /opt/monitoring/grafana/datasources
+    - /opt/monitoring/grafana/providers
+    - /opt/monitoring/grafana/dashboards
 
 - name: Copier la config Prometheus
   template:
@@ -23,6 +26,21 @@
   template:
     src: alertmanager.yml.j2
     dest: /opt/monitoring/alertmanager/config.yml
+
+- name: Copier la configuration Datasources
+  copy:
+    src: grafana/datasources/datasources.yml
+    dest: /opt/monitoring/grafana/datasources/datasources.yml
+
+- name: Copier la configuration Dashboard Provider
+  copy:
+    src: grafana/providers/dashboards.yml
+    dest: /opt/monitoring/grafana/providers/dashboards.yml
+
+- name: Copier le JSON du Dashboard
+  copy:
+    src: grafana/dashboards/node_exporter_full.json
+    dest: /opt/monitoring/grafana/dashboards/node_exporter_full.json
 
 - name: Créer le réseau Monitoring
   community.docker.docker_network:
@@ -73,3 +91,6 @@
       GF_SECURITY_ADMIN_PASSWORD: "admin"
     volumes:
       - grafana_data:/var/lib/grafana
+      - "/opt/monitoring/grafana/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml"
+      - "/opt/monitoring/grafana/providers/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml"
+      - "/opt/monitoring/grafana/dashboards/node_exporter_full.json:/var/lib/grafana/dashboards/node_exporter_full.json"
