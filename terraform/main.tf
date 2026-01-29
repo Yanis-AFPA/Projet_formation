@@ -12,7 +12,7 @@ resource "proxmox_virtual_environment_vm" "factory_vm" {
   }
 
   agent {
-    enabled = false
+    enabled = true
   }
 
   cpu {
@@ -28,7 +28,7 @@ resource "proxmox_virtual_environment_vm" "factory_vm" {
     datastore_id = "Cible_NFS"
     interface    = "scsi0"
     size         = each.value.disk_size
-    file_format  = "raw"
+    file_format  = "qcow2"
     iothread     = true
   }
 

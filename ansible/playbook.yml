@@ -5,6 +5,7 @@
 - name: Déploiement Infra Sécurisée (Proxy)
   hosts: proxy
   become: true
+  tags: proxy
   roles:
     - docker
     - ca
@@ -26,10 +27,13 @@
   become: true
   vars:
     dns_ip: "10.212.213.21"
+  tags: client
   roles:
     - docker
     - client_setup
     - node-exporter
+    - qemu_guest_agent
+
 
 # ==========================================
 # ÉTAPE 3 : LE SERVEUR DNS
@@ -41,6 +45,7 @@
     dns_ip: "10.212.213.21"
     reverse_proxy_ip: "10.212.213.20"
     gitlab_ip: "10.212.213.30"
+  tags: dns
   roles:
     - dns
 
@@ -50,6 +55,7 @@
 - name: Déploiement GitLab
   hosts: gitlab
   become: true
+  tags: git
   roles:
     - gitlab
     - gitlab_runner 
@@ -60,6 +66,7 @@
 - name: Déploiement Harbor
   hosts: harbor
   become: true
+  tags: harbor
   roles:
     - harbor
 
@@ -69,6 +76,7 @@
 - name: Déploiement Bookstack
   hosts: bookstack
   become: true
+  tags: bookstack
   roles:
     - bookstack
 
@@ -78,6 +86,6 @@
 - name: Installation Monitoring Stack
   hosts: monitoring
   become: true
+  tags: monitoring
   roles:
     - monitoring
-

@@ -1,0 +1,42 @@
+- name: "Créer la page vide (ou récupérer l'ID) pour {{ current_md_file | basename }}"
+  ansible.builtin.uri:
+    url: "{{ bookstack_url }}/api/pages"
+    method: POST
+    headers:
+      Authorization: "Token {{ bookstack_api_token_id }}:{{ bookstack_api_token_secret }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      book_id: "{{ target_book_id_dyn }}"
+      name: "{{ current_md_file | basename | regex_replace('\\.md$', '') }}"
+      markdown: "Import en cours..."
+    status_code: [200, 201]
+  register: temp_page_id
+  delegate_to: localhost
+
+- name: "Traiter les images et uploader sur la page {{ temp_page_id.json.id }}"
+  ansible.builtin.command:
+    cmd: >
+      python3 "{{ role_path }}/files/process_markdown.py"
+      "{{ current_md_file }}"
+      "{{ bookstack_url }}"
+      "{{ bookstack_api_token_id }}"
+      "{{ bookstack_api_token_secret }}"
+      "{{ temp_page_id.json.id }}"
+  register: processed_markdown
+  delegate_to: localhost
+  become: no
+
+- name: "Mettre à jour la page avec le Markdown final"
+  ansible.builtin.uri:
+    url: "{{ bookstack_url }}/api/pages/{{ temp_page_id.json.id }}"
+    method: PUT
+    headers:
+      Authorization: "Token {{ bookstack_api_token_id }}:{{ bookstack_api_token_secret }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ current_md_file | basename | regex_replace('\\.md$', '') }}"
+      markdown: "{{ processed_markdown.stdout }}"
+    status_code: [200]
+  delegate_to: localhost

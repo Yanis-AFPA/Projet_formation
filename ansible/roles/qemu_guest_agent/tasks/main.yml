@@ -1,0 +1,23 @@
+---
+- name: Mettre à jour le cache APT (Debian/Ubuntu)
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Installer QEMU Guest Agent
+  package:
+    name: qemu-guest-agent
+    state: present
+
+- name: Démarrer et activer le service QEMU Guest Agent
+  service:
+    name: qemu-guest-agent
+    state: started
+    enabled: yes
+
+- name: Vérifier que le service tourne
+  command: systemctl is-active qemu-guest-agent
+  register: qga_status
+  changed_when: false
+  failed_when: qga_status.rc != 0

@@ -28,15 +28,17 @@ log:
     rotate_size: 200M
     location: /var/log/harbor
 
-# Configuration critique pour v2.10+ / v2.14+
+
+
 jobservice:
   max_job_workers: 10
   logger_sweeper_duration: 1
+  insecure: true
   job_loggers:
-    - type: "file"
-      level: "INFO"
-    - type: "std"
-      level: "INFO"
+    - type: file
+      level: INFO
+    - type: std
+      level: INFO
 
 notification:
   webhook_job_max_retry: 10
@@ -53,3 +55,6 @@ metric:
   enabled: false
   port: 9090
   path: /metrics
+
+internal_tls:
+  enabled: false

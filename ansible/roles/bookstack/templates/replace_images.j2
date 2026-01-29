@@ -1,0 +1,7 @@
+{% set md_content = lookup('file', md_file) %}
+{% if img_map is defined %}
+{% for img_name, img_url in img_map.items() %}
+{% set md_content = md_content | regex_replace('!\[([^\]]*)\]\((?:(?:\./)?images/)?' ~ img_name ~ '\)', '![\1](' ~ img_url ~ ')') %}
+{% endfor %}
+{% endif %}
+{{ md_content }}

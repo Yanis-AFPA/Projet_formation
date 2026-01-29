@@ -1,9 +1,10 @@
 ---
+# --- INFRASTRUCTURE DOCKER ---
 - name: Créer un réseau Docker pour BookStack
   community.docker.docker_network:
     name: bookstack_net
+  tags: bookstack
 
-# --- Conteneur 1 : La Base de Données ---
 - name: Lancer MariaDB
   community.docker.docker_container:
     name: bookstack_db
@@ -21,8 +22,8 @@
       MYSQL_PASSWORD: "{{ bookstack_db_password }}"
     volumes:
       - /opt/bookstack/db_data:/config
+  tags: bookstack
 
-# --- Conteneur 2 : L'Application ---
 - name: Lancer BookStack
   community.docker.docker_container:
     name: bookstack_app
@@ -44,36 +45,63 @@
       DB_PASSWORD: "{{ bookstack_db_password }}"
     volumes:
       - /opt/bookstack/app_data:/config
+  tags: bookstack
 
-# --- IMPORT MARKDOWN (nouveau) ---
-- name: Attendre que BookStack soit accessible
-  uri:
-    url: "{{ bookstack_url }}/login"
+# --- PHASE DE NETTOYAGE ET RECONSTRUCTION (IMPORT) ---
+
+- name: Initialiser les variables d'import
+  set_fact:
+    target_book_name: "Documentation Proxmox"
+    existing_pages_map: {}
+  tags: bookstack
+
+- name: "Chercher si le livre existe déjà pour suppression"
+  ansible.builtin.uri:
+    url: "{{ bookstack_url }}/api/books?filter[name]={{ target_book_name | urlencode }}"
     method: GET
-    status_code: 200
-  register: _bookstack_health
-  retries: 30
-  delay: 5
-  until: _bookstack_health.status == 200
+    headers:
+      Authorization: "Token {{ bookstack_api_token_id }}:{{ bookstack_api_token_secret }}"
+  register: search_to_delete
+  tags: bookstack
 
-- name: Importer les fichiers Markdown dans BookStack
-  uri:
-    url: "{{ bookstack_url }}/api/pages"
+- name: "Supprimer le livre existant (Nettoyage complet)"
+  ansible.builtin.uri:
+    url: "{{ bookstack_url }}/api/books/{{ search_to_delete.json.data[0].id }}"
+    method: DELETE
+    headers:
+      Authorization: "Token {{ bookstack_api_token_id }}:{{ bookstack_api_token_secret }}"
+    status_code: [204]
+  when: search_to_delete.json.total > 0
+  tags: bookstack
+
+- name: "Créer le nouveau livre (Base saine)"
+  ansible.builtin.uri:
+    url: "{{ bookstack_url }}/api/books"
     method: POST
     headers:
-      Authorization: "Token {{ CunAfjEkFfpCe9JK0oqhBUScDSrqI4oz }}:{{ Obhdmxfplnb2OmeNHAhjoKkUMrpg10oT }}"
+      Authorization: "Token {{ bookstack_api_token_id }}:{{ bookstack_api_token_secret }}"
       Content-Type: "application/json"
     body_format: json
-    body: >-
-      {{
-        {
-          'book_id': bookstack_target_book_id,
-          'name': (item | basename | regex_replace('\\.md$', '')),
-          'markdown': lookup('file', item)
-        }
-      }}
+    body:
+      name: "{{ target_book_name }}"
+      description: "Import automatique (Rebuild complet)"
     status_code: [200, 201]
-    return_content: yes
+  register: created_book
+  tags: bookstack
+
+- name: "Définir l'ID du nouveau livre"
+  set_fact:
+    real_book_id: "{{ created_book.json.id }}"
+  tags: bookstack
+
+# --- TRAITEMENT ET IMPORT DES PAGES ---
+
+- name: "Traiter et importer chaque fichier Markdown"
+  include_tasks: _import_single_page.yml
+  vars:
+    target_book_id_dyn: "{{ real_book_id }}"
   loop: "{{ lookup('fileglob', bookstack_md_source_dir ~ '/*.md', wantlist=True) }}"
   loop_control:
-    label: "{{ item | basename }}"
+    loop_var: current_md_file
+  when: real_book_id is defined
+  tags: bookstack
