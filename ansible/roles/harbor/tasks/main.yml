@@ -28,11 +28,12 @@
     dest: /opt/harbor/harbor.yml
 
 # 5. INSTALLATION ET CRÉATION DU FICHIER TÉMOIN
-- name: Installer et Lancer Harbor
+- name: Installer et Lancer Harbor avec Trivy
   shell: |
-    ./install.sh
-    touch /opt/harbor/harbor_installed  # On crée le fichier témoin pour Ansible
+    ./prepare
+    ./install.sh --with-trivy
+    touch /opt/harbor/harbor_installed
   args:
     chdir: /opt/harbor
-    # Ansible ne lancera install.sh que si ce fichier n'existe pas
+    # Ansible ne lancera cette tâche que si ce fichier n'existe PAS
     creates: /opt/harbor/harbor_installed

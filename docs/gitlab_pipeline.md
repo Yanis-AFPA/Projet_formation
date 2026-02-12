@@ -155,7 +155,7 @@ Toutes les images utilisées dans le pipeline (Python, Trivy, Gitleaks) sont pr�
 image: python:3.10-slim
 
 # ✅ APRÈS : Utilisation du Proxy Cache
-image: harbor.grp-ay.lab/dhi-proxy/library/python:3.10-slim
+image: harbor.grp-ay.lab/dhi-proxy/python:3.10-slim
 ```
 
 ---

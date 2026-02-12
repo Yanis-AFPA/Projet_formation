@@ -35,10 +35,12 @@ jobservice:
   logger_sweeper_duration: 1
   insecure: true
   job_loggers:
-    - type: file
-      level: INFO
-    - type: std
-      level: INFO
+    - name:"STD_OUTPUT"
+      level: "INFO"
+    - name: "FILE"
+      level: "INFO"
+      settings:
+      base_dir."/var/logs/jobs"
 
 notification:
   webhook_job_max_retry: 10
