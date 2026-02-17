@@ -89,3 +89,45 @@
   tags: monitoring
   roles:
     - monitoring
+
+# ==========================================
+# ÉTAPE 8 : Le Cluster Kubernetes (K3s)
+# ==========================================
+- name: Déploiement du cluster K3s
+  # On cible le groupe parent qui contient le master et les workers
+  hosts: k3s_cluster 
+  become: true
+  tags: k3s
+  roles:
+    - k3s
+
+# ==========================================
+# ÉTAPE 8 : Le Serveur NFS (Stockage K3s)
+# ==========================================
+- name: Déploiement du serveur NFS
+  hosts: nfs
+  become: true
+  tags: nfs
+  roles:
+    - nfs_server
+
+# ==========================================
+# ÉTAPE 9 : La Base de Données Externe
+# ==========================================
+- name: Déploiement de la Base de Données
+  hosts: database
+  become: true
+  tags: database
+  roles:
+    - docker   # <-- Indispensable : on installe Docker d'abord !
+    - database # <-- Ensuite, on lance notre conteneur DB
+
+# ==========================================
+# ÉTAPE 10 : ArgoCD (Le moteur GitOps)
+# ==========================================
+- name: Déploiement de ArgoCD
+  hosts: k3s_master
+  become: true
+  tags: argocd
+  roles:
+    - argocd

@@ -25,10 +25,10 @@ resource "proxmox_virtual_environment_vm" "factory_vm" {
   }
 
   disk {
-    datastore_id = "Cible_NFS"
+    datastore_id = "local-lvm"
     interface    = "scsi0"
     size         = each.value.disk_size
-    file_format  = "qcow2"
+    file_format  = "raw"
     iothread     = true
   }
 
@@ -38,7 +38,7 @@ resource "proxmox_virtual_environment_vm" "factory_vm" {
   }
 
   initialization {
-    datastore_id = "Cible_NFS"
+    datastore_id = "local-lvm"
     ip_config {
       ipv4 {
         address = each.value.ip_cidr

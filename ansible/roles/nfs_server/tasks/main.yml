@@ -1,0 +1,36 @@
+---
+- name: Installer le serveur NFS
+  apt:
+    name: nfs-kernel-server
+    state: present
+    update_cache: yes
+
+- name: Créer le répertoire de stockage racine pour K3s
+  file:
+    path: /srv/nfs/k3s_data
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: '0777'
+
+- name: Créer le sous-répertoire pour l'application Calendrier
+  file:
+    path: /srv/nfs/k3s_data/calendrier
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: '0777'
+
+- name: Configurer les accès NFS (/etc/exports)
+  lineinfile:
+    path: /etc/exports
+    # On exporte le dossier racine. K3s pourra monter les sous-dossiers sans problème.
+    line: '/srv/nfs/k3s_data 10.212.213.0/24(rw,sync,no_subtree_check,no_root_squash)'
+    state: present
+  notify: recharger nfs
+
+- name: S'assurer que NFS est démarré
+  systemd:
+    name: nfs-kernel-server
+    state: started
+    enabled: yes

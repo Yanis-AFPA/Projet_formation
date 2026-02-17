@@ -5,9 +5,11 @@
     src: /tmp/fetched_certs/rootCA.crt
     dest: /usr/local/share/ca-certificates/grp-ay-ca.crt
     mode: '0644'
+  register: ca_cert
 
 - name: 3. Mettre à jour les certificats
   command: update-ca-certificates
+  when: ca_cert.changed
 
 - name: Configurer le DNS client (resolv.conf)
   ansible.builtin.copy:

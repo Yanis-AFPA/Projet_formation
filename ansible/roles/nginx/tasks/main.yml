@@ -35,6 +35,13 @@
     dest: /opt/nginx/conf.d/monitoring.conf
   notify: Restart Nginx
 
+- name: Copier la config Nginx k3s
+  template:
+    src: k3s.conf.j2
+    dest: /opt/nginx/conf.d/k3s.conf
+  notify: Restart Nginx
+
+
 - name: Créer le dossier web et copier l'index
   file:
     path: /opt/nginx/html

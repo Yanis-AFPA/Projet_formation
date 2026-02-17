@@ -1,0 +1,32 @@
+---
+- name: Créer le dossier racine de la base de données
+  file:
+    path: /opt/database
+    state: directory
+    mode: '0755'
+
+- name: Générer le fichier docker-compose.yml
+  copy:
+    dest: /opt/database/docker-compose.yml
+    mode: '0644'
+    content: |
+      version: '3.8'
+      services:
+        postgres:
+          image: postgres:15
+          container_name: db_externe
+          restart: always
+          environment:
+            POSTGRES_USER: admin_db
+            POSTGRES_PASSWORD: P@ssw0rd34
+            POSTGRES_DB: default_db
+          ports:
+            - "5432:5432" # On expose le port sur l'IP de la VM
+          volumes:
+            # Le stockage persistant des données de la DB
+            - ./pg_data:/var/lib/postgresql/data
+
+- name: Démarrer la base de données (Docker Compose)
+  command: docker compose up -d
+  args:
+    chdir: /opt/database

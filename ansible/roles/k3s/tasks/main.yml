@@ -1,0 +1,21 @@
+---
+
+- include_tasks: master.yml
+  when: inventory_hostname in groups['k3s_master']
+
+- include_tasks: worker.yml
+  when: inventory_hostname in groups['k3s_workers']
+
+- name: Installer les dépendances système pour le stockage (NFS/Longhorn)
+  apt:
+    name:
+      - nfs-common
+      - open-iscsi  # Optionnel mais recommandé pour le stockage K8s
+    state: present
+    update_cache: yes
+
+- name: S'assurer que le service RPCbind est démarré (nécessaire pour NFS)
+  systemd:
+    name: rpcbind
+    state: started
+    enabled: yes
