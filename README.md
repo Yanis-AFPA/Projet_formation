@@ -69,7 +69,7 @@ Le projet respecte les principes IaC : tout est versionné et automatisé.
 1. 📖 [Prérequis et Configuration Initiale](./docs/prerequis.md)
 2. 🏗️ [Déploiement de l'Infrastructure (Terraform)](./docs/Terraform.md)
 3. ⚙️ [Configuration des Services (Ansible)](./docs/ansible.md)
-4. ☸️ [Gestion du Cluster Kubernetes (k3s)](./docs/kubernetes.md)
+4. ☸️ [Gestion du Cluster Kubernetes (k3s)](./docs/creation_K3S.md)
 5. 🌐 [Accès aux Applications et Endpoints](./docs/acces-services.md)
 
 ## 🔐 Sécurité & Accès
